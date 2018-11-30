@@ -112,7 +112,9 @@ public class SerializablePlugin extends PluginAdapter {
                 context.getCommentGenerator().addFieldComment(field, introspectedTable);
             }
 
-            topLevelClass.addField(field);
+            // set serialVersionUID as first field
+            topLevelClass.getFields().add(0, field);
+//            topLevelClass.addField(field);
         }
     }
 }
