@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2018 the original author or authors.
+ *    Copyright 2006-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.PluginAdapter;
 import org.mybatis.generator.api.dom.java.Field;
 import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
+import org.mybatis.generator.api.dom.java.InnerClass;
 import org.mybatis.generator.api.dom.java.InnerEnum;
 import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
@@ -150,6 +151,30 @@ public class ExampleColumnPlugin extends PluginAdapter {
     alias.addBodyLine("return this.column + \" as \" + this.javaProperty;");
     innerEnum.addMethod(alias);
 
+    Method eq = new Method("eq");
+    eq.setVisibility(JavaVisibility.PUBLIC);
+    eq.setReturnType(stringType);
+    eq.addParameter(new Parameter(FullyQualifiedJavaType.getObjectInstance(), "value"));
+    eq.addBodyLines(Arrays.asList(
+        "String v = value == null ? \"NULL\" : value.toString();",
+        "if (value != null) {",
+        "if (!(value instanceof Number)) {",
+        "v = v.replaceAll(\"\\\\\\\\\", \"\\\\\\\\\\\\\\\\\")",
+        ".replaceAll(\"\\b\",\"\\\\\\\\b\")",
+        ".replaceAll(\"\\n\",\"\\\\\\\\n\")",
+        ".replaceAll(\"\\r\", \"\\\\\\\\r\")",
+        ".replaceAll(\"\\t\", \"\\\\\\\\t\")",
+        ".replaceAll(\"\\\\x1A\", \"\\\\\\\\Z\")",
+        ".replaceAll(\"\\\\x00\", \"\\\\\\\\0\")",
+        ".replaceAll(\"'\", \"\\\\\\\\'\")",
+        ".replaceAll(\"\\\"\", \"\\\\\\\\\\\"\");",
+        "v = \"\\\"\" + v + \"\\\"\";",
+        "}",
+        "}",
+        "return this.column + \"=\" + v;"
+    ));
+    innerEnum.addMethod(eq);
+
     // excludes method
     topLevelClass.addImportedType("java.util.Arrays");
     topLevelClass.addImportedType(FullyQualifiedJavaType.getNewArrayListInstance());
@@ -177,6 +202,44 @@ public class ExampleColumnPlugin extends PluginAdapter {
     mExcludes.addBodyLine("return sb.toString();");
 //    mExcludes.addBodyLine("return columns.toArray(new " + enumName + "[]{});");
     innerEnum.addMethod(mExcludes);
+
+    // ==================== update builder =====================
+    InnerClass updateBuilder = new InnerClass(new FullyQualifiedJavaType("UpdateBuilder"));
+    updateBuilder.setStatic(true);
+    updateBuilder.setVisibility(JavaVisibility.PUBLIC);
+    innerEnum.addInnerClass(updateBuilder);
+
+    // static update method
+    Method mUpdate = new Method("update");
+    mUpdate.setStatic(true);
+    mUpdate.setReturnType(updateBuilder.getType());
+    mUpdate.setVisibility(JavaVisibility.PUBLIC);
+    mUpdate.addBodyLine("return new UpdateBuilder();");
+    innerEnum.addMethod(mUpdate);
+
+    // UpdateBuilder fields
+    Field fUpdate = new Field("updates", new FullyQualifiedJavaType("java.util.List<String>"));
+    fUpdate.setInitializationString("new ArrayList()");
+    fUpdate.setVisibility(JavaVisibility.PRIVATE);
+    updateBuilder.addField(fUpdate);
+    // build method
+    Method mfBuild = new Method("build");
+    mfBuild.setVisibility(JavaVisibility.PUBLIC);
+    mfBuild.setReturnType(stringType);
+    mfBuild.addBodyLine("return String.join(\",\", updates);");
+    updateBuilder.addMethod(mfBuild);
+    // iterator columns
+    for (IntrospectedColumn column : introspectedTable.getAllColumns()) {
+      Field field = JavaBeansUtil.getJavaBeansField(column, context, introspectedTable);
+      // builder method
+      Method m = new Method(field.getName());
+      m.setVisibility(JavaVisibility.PUBLIC);
+      m.setReturnType(updateBuilder.getType());
+      m.addParameter(new Parameter(field.getType(), "value"));
+      m.addBodyLine("updates.add(" + field.getName() + ".eq(value));");
+      m.addBodyLine("return this;");
+      updateBuilder.addMethod(m);
+    }
 
     return innerEnum;
   }

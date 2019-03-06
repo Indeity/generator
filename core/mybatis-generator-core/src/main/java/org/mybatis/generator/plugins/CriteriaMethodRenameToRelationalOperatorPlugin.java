@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2018 the original author or authors.
+ *    Copyright 2006-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -69,17 +69,20 @@ public class CriteriaMethodRenameToRelationalOperatorPlugin extends PluginAdapte
 
     for (Method method : generatedCriteria.getMethods()) {
       String name = method.getName();
-      if (name.startsWith("and")) {
+      if (name.startsWith("and") && name.length() > 3) {
+        // remove "and" first
+        name = name.substring(3);
+        name = name.substring(0, 1).toLowerCase() + name.substring(1);
         for (Entry<String, String> entry : renameMap.entrySet()) {
           if (name.endsWith(entry.getKey())) {
             // andIdEqualTo -> idEq
-            String prop = name.substring(3, name.length() - entry.getKey().length());
-            prop = prop.substring(0, 1).toLowerCase() + prop.substring(1);
+            String prop = name.substring(0, name.length() - entry.getKey().length());
+//            prop = prop.substring(0, 1).toLowerCase() + prop.substring(1);
             name = prop.concat(entry.getValue());
-            method.setName(name);
-            continue;
+            break;
           }
         }
+        method.setName(name);
       }
     }
 

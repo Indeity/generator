@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2018 the original author or authors.
+ *    Copyright 2006-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -93,10 +93,10 @@ public class ExistByExamplePlugin extends PluginAdapter {
     element.addAttribute(new Attribute("resultType", "boolean"));
 
     // start sql statement
-    element.addElement(new TextElement("select"));
+    element.addElement(new TextElement("select exists ("));
 
     // count
-    element.addElement(new TextElement("count(*) > 0"));
+    element.addElement(new TextElement("select 1"));
 
     // from
     element.addElement(new TextElement("from "
@@ -110,6 +110,9 @@ public class ExistByExamplePlugin extends PluginAdapter {
         new Attribute("refid", introspectedTable.getExampleWhereClauseId()));
     example.addElement(includeElement);
     element.addElement(example);
+
+    // last quote
+    element.addElement(new TextElement(")"));
 
     // add to root
     parent.addElement(element);
