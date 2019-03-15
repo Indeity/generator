@@ -176,6 +176,14 @@ For example: `${user}.phone as ${user}_phone`
 <plugin type="org.mybatis.generator.plugins.SqlDynamicColumnPlugin" />
 ```
 
+## UpdateSelectNullPlugin
+
+`updateByIdSelective` would ignore all null values, this plugin is used to add custom updates to exist update clause.
+
+```xml
+<plugin type="org.mybatis.generator.plugins.UpdateSelectNullPlugin" />
+```
+
 ---
 
 Full example:
@@ -220,6 +228,8 @@ Full example:
         </plugin>
         <!-- add pain query support -->
         <plugin type="org.mybatis.generator.plugins.PainQueryPlugin" />
+        <!-- override update with manually clause -->
+        <plugin type="org.mybatis.generator.plugins.UpdateSelectNullPlugin" />
         <!-- SelectOneByExample -->
         <plugin type="org.mybatis.generator.plugins.SelectOneByExamplePlugin" />
         <!-- ExistByExample -->
