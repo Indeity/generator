@@ -20,6 +20,7 @@ import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -28,10 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.mybatis.generator.api.GeneratedJavaFile;
+import org.mybatis.generator.api.GeneratedXmlFile;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.Plugin;
 import org.mybatis.generator.api.PluginAdapter;
 import org.mybatis.generator.api.dom.DefaultJavaFormatter;
+import org.mybatis.generator.api.dom.DefaultXmlFormatter;
 import org.mybatis.generator.api.dom.OutputUtilities;
 import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
 import org.mybatis.generator.api.dom.java.Interface;
@@ -39,8 +42,11 @@ import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.Parameter;
 import org.mybatis.generator.api.dom.java.TopLevelClass;
+import org.mybatis.generator.api.dom.xml.Attribute;
+import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
 import org.mybatis.generator.api.dom.xml.XmlElement;
+import org.mybatis.generator.codegen.XmlConstants;
 import org.mybatis.generator.config.Context;
 import org.mybatis.generator.internal.PluginAggregator;
 
@@ -194,6 +200,28 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     models.add(genericInterfaceFile);
 
     return models;
+  }
+
+  @Override
+  public List<GeneratedXmlFile> contextGenerateAdditionalXmlFiles() {
+    // create document
+    Document document = new Document(XmlConstants.MYBATIS3_MAPPER_PUBLIC_ID,
+        XmlConstants.MYBATIS3_MAPPER_SYSTEM_ID);
+
+    XmlElement root = new XmlElement("mapper");
+    root.addAttribute(new Attribute("namespace", interfaceName));
+    root.addElement(new TextElement(""));
+    document.setRootElement(root);
+
+    String fileName = interfaceName.substring(interfaceName.lastIndexOf(".") + 1) + ".xml";
+
+    String targetPackage = context.getSqlMapGeneratorConfiguration().getTargetPackage() + ".empty";
+    String targetProject = context.getSqlMapGeneratorConfiguration().getTargetProject();
+
+    GeneratedXmlFile xml = new GeneratedXmlFile(document, fileName,
+        targetPackage, targetProject, true, new DefaultXmlFormatter());
+
+    return Arrays.asList(xml);
   }
 
   @Override
