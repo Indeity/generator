@@ -175,35 +175,73 @@ public class ExampleColumnPlugin extends PluginAdapter {
     ));
     innerEnum.addMethod(eq);
 
-    // excludes method
+    // ==================== select builder ============================
+    InnerClass selectBuilder = new InnerClass(new FullyQualifiedJavaType("SelectBuilder"));
+    selectBuilder.setStatic(true);
+    selectBuilder.setVisibility(JavaVisibility.PUBLIC);
+    innerEnum.addInnerClass(selectBuilder);
+
+    // static select method
+    Method mSelect = new Method("select");
+    mSelect.setStatic(true);
+    mSelect.setReturnType(selectBuilder.getType());
+    mSelect.setVisibility(JavaVisibility.PUBLIC);
+    mSelect.addBodyLine("return new SelectBuilder(false);");
+    innerEnum.addMethod(mSelect);
+    // static selectAll method
+    Method mSelectAll = new Method("selectAll");
+    mSelectAll.setStatic(true);
+    mSelectAll.setReturnType(selectBuilder.getType());
+    mSelectAll.setVisibility(JavaVisibility.PUBLIC);
+    mSelectAll.addBodyLine("return new SelectBuilder(true);");
+    innerEnum.addMethod(mSelectAll);
+
+    // SelectBuilder fields
+    FullyQualifiedJavaType booleanType = FullyQualifiedJavaType.getBooleanPrimitiveInstance();
+    Field fSelectAll = new Field("all", booleanType);
+    fSelectAll.setVisibility(JavaVisibility.PRIVATE);
+    selectBuilder.addField(fSelectAll);
+    Field fSelect = new Field("selects", new FullyQualifiedJavaType("java.util.HashSet<String>"));
+    fSelect.setInitializationString("new HashSet<>()");
+    fSelect.setVisibility(JavaVisibility.PRIVATE);
+    selectBuilder.addField(fSelect);
+
+    // Select constructor
+    Method mSelectCon = new Method(selectBuilder.getType().getShortName());
+    mSelectCon.setConstructor(true);
+    mSelectCon.addParameter(new Parameter(booleanType, "all"));
+    mSelectCon.addBodyLine("this.all = all;");
+    selectBuilder.addMethod(mSelectCon);
+
+    // Select build
+    Method msBuild = new Method("build");
+    msBuild.setVisibility(JavaVisibility.PUBLIC);
+    msBuild.setReturnType(stringType);
+    msBuild.addBodyLines(Arrays.asList(
+        "return all ? Arrays.stream(values()).map(e -> e.column)",
+        "  .filter(e -> !selects.contains(e)).collect(Collectors.joining(\",\"))",
+        "  : String.join(\",\", selects);"
+    ));
+    selectBuilder.addMethod(msBuild);
+
+    // add import
     topLevelClass.addImportedType("java.util.Arrays");
-    topLevelClass.addImportedType(FullyQualifiedJavaType.getNewArrayListInstance());
+    topLevelClass.addImportedType("java.util.HashSet");
+    topLevelClass.addImportedType("java.util.stream.Collectors");
 
-    Method mExcludes = new Method(METHOD_EXCLUDES);
-    mExcludes.setVisibility(JavaVisibility.PUBLIC);
-//    mExcludes.setReturnType(new FullyQualifiedJavaType(enumName + "[]"));
-    mExcludes.setReturnType(stringType);
-    mExcludes.addParameter(new Parameter(innerEnum.getType(), "excludes", true));
-    mExcludes.setStatic(true);
-    mExcludes.addBodyLines(Arrays.asList(
-        String.format(
-            "ArrayList<%1$s> columns = new ArrayList<>(Arrays.asList(%1$s.values()));", enumName),
-        "if (excludes != null && excludes.length > 0) {",
-        "columns.removeAll(new ArrayList<>(Arrays.asList(excludes)));",
-        "}"
-    ));
-    mExcludes.addBodyLines(Arrays.asList(
-        "StringBuilder sb = new StringBuilder();",
-        String.format("for (%s column : columns) {", enumName),
-        "sb.append(column.as()).append(',');",
-        "}",
-        "sb.setLength(sb.length() - 1);"
-    ));
-    mExcludes.addBodyLine("return sb.toString();");
-//    mExcludes.addBodyLine("return columns.toArray(new " + enumName + "[]{});");
-    innerEnum.addMethod(mExcludes);
+    // iterator columns
+    for (IntrospectedColumn column : introspectedTable.getAllColumns()) {
+      Field field = JavaBeansUtil.getJavaBeansField(column, context, introspectedTable);
+      // builder method
+      Method m = new Method(field.getName());
+      m.setVisibility(JavaVisibility.PUBLIC);
+      m.setReturnType(selectBuilder.getType());
+      m.addBodyLine("selects.add(" + field.getName() + ".column);");
+      m.addBodyLine("return this;");
+      selectBuilder.addMethod(m);
+    }
 
-    // ==================== update builder =====================
+    // ==================== update builder =============================
     InnerClass updateBuilder = new InnerClass(new FullyQualifiedJavaType("UpdateBuilder"));
     updateBuilder.setStatic(true);
     updateBuilder.setVisibility(JavaVisibility.PUBLIC);
@@ -217,7 +255,7 @@ public class ExampleColumnPlugin extends PluginAdapter {
     mUpdate.addBodyLine("return new UpdateBuilder();");
     innerEnum.addMethod(mUpdate);
 
-    // UpdateBuilder fields
+    // UpdateBuilder fields, updates must be in order
     Field fUpdate = new Field("updates", new FullyQualifiedJavaType("java.util.List<String>"));
     fUpdate.setInitializationString("new ArrayList()");
     fUpdate.setVisibility(JavaVisibility.PRIVATE);
@@ -236,7 +274,8 @@ public class ExampleColumnPlugin extends PluginAdapter {
       m.setVisibility(JavaVisibility.PUBLIC);
       m.setReturnType(updateBuilder.getType());
       m.addParameter(new Parameter(field.getType(), "value"));
-      m.addBodyLine("updates.add(" + field.getName() + ".eq(value));");
+      m.addBodyLine("this.updates.add(" + innerEnum.getType().getShortName() + "."
+          + field.getName() + ".eq(value));");
       m.addBodyLine("return this;");
       updateBuilder.addMethod(m);
     }
