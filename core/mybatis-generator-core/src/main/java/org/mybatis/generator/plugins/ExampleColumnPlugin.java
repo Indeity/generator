@@ -158,7 +158,7 @@ public class ExampleColumnPlugin extends PluginAdapter {
     eq.addBodyLines(Arrays.asList(
         "String v = value == null ? \"NULL\" : value.toString();",
         "if (value != null) {",
-        "if (!(value instanceof Number)) {",
+        "if (!(value instanceof Number || value instanceof Boolean)) {",
         "v = v.replaceAll(\"\\\\\\\\\", \"\\\\\\\\\\\\\\\\\")",
         ".replaceAll(\"\\b\",\"\\\\\\\\b\")",
         ".replaceAll(\"\\n\",\"\\\\\\\\n\")",

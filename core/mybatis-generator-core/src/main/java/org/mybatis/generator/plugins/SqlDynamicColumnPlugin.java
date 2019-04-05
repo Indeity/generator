@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2018 the original author or authors.
+ *    Copyright 2006-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -36,7 +36,11 @@ public class SqlDynamicColumnPlugin extends PluginAdapter {
 
   private String fullDynamic = "Dynamic_Column_List";
   private String oneToOne = "Table_Dynamic_Column_List";
-  private String property = "tb"; // the table join alias
+  private String tableProperty = "tb"; // the table join alias
+
+  private String aliasDynamic = "Table_Alias_Dynamic_Column_List";
+  private String aliasPrefix = "pfx"; // alias column prefix
+
 
   @Override
   public boolean validate(List<String> warnings) {
@@ -51,7 +55,7 @@ public class SqlDynamicColumnPlugin extends PluginAdapter {
     // build alias
     List<String> columns = new ArrayList<>();
     for (IntrospectedColumn column : introspectedTable.getAllColumns()) {
-      columns.add(String.format("${%1$s}.%2$s as ${%1$s}_%2$s", property,
+      columns.add(String.format("${%1$s}.%2$s as ${%1$s}_%2$s", tableProperty,
           column.getActualColumnName()));
     }
     formatLines(fullDynamicEle, columns, ',', false, 0);
@@ -63,11 +67,22 @@ public class SqlDynamicColumnPlugin extends PluginAdapter {
     // build alias
     columns.clear();
     for (IntrospectedColumn column : introspectedTable.getAllColumns()) {
-      columns.add(String.format("${%1$s}.%2$s as %2$s", property,
+      columns.add(String.format("${%1$s}.%2$s as %2$s", tableProperty,
           column.getActualColumnName()));
     }
     formatLines(oneToOneEle, columns, ',', false, 0);
     document.getRootElement().addElement(oneToOneEle);
+
+    // alias Dynamic
+    XmlElement aliasEle = new XmlElement("sql");
+    aliasEle.addAttribute(new Attribute("id", aliasDynamic));
+    columns.clear();
+    for (IntrospectedColumn column : introspectedTable.getAllColumns()) {
+      columns.add(String.format("${%1$s}.%3$s as ${%2$s}_%3$s",
+          tableProperty, aliasPrefix, column.getActualColumnName()));
+    }
+    formatLines(aliasEle, columns, ',', false, 0);
+    document.getRootElement().addElement(aliasEle);
 
     return true;
   }
