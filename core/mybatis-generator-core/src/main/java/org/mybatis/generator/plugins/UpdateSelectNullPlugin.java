@@ -112,7 +112,7 @@ public class UpdateSelectNullPlugin extends PluginAdapter {
         .removeGeneratedAlwaysColumns(introspectedTable
             .getNonPrimaryKeyColumns())) {
       sb.setLength(0);
-      sb.append(introspectedColumn.getJavaProperty());
+      sb.append(introspectedColumn.getJavaProperty("record."));
       sb.append(" != null"); //$NON-NLS-1$
       XmlElement isNotNullElement = new XmlElement("if"); //$NON-NLS-1$
       isNotNullElement.addAttribute(new Attribute("test", sb.toString())); //$NON-NLS-1$
@@ -122,7 +122,7 @@ public class UpdateSelectNullPlugin extends PluginAdapter {
       sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
       sb.append(" = "); //$NON-NLS-1$
       sb.append(MyBatis3FormattingUtilities
-          .getParameterClause(introspectedColumn));
+          .getParameterClause(introspectedColumn, "record."));
       sb.append(',');
 
       isNotNullElement.addElement(new TextElement(sb.toString()));
