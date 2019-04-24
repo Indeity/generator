@@ -23,7 +23,6 @@ import org.mybatis.generator.api.dom.java.Interface;
 import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.Parameter;
-import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.api.dom.xml.Attribute;
 import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
@@ -51,8 +50,7 @@ public class ExistByExamplePlugin extends PluginAdapter {
   }
 
   @Override
-  public boolean clientGenerated(
-      Interface interfaze, TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
+  public boolean clientGenerated(Interface interfaze, IntrospectedTable introspectedTable) {
     // check one not exist, then all not exist
     if (!genericPlugin.methodsAdded.contains(existByExample)) {
       genericPlugin.methodsAdded.add(existByExample);
@@ -72,8 +70,8 @@ public class ExistByExamplePlugin extends PluginAdapter {
   private void addExistByExampleMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
     // add method
-    Method method = new Method();
-    method.setName(existByExample);
+    Method method = new Method(existByExample);
+    method.setAbstract(true);
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setReturnType(FullyQualifiedJavaType.getBooleanPrimitiveInstance());
     // add example param

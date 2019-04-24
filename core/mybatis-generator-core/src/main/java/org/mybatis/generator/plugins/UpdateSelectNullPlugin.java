@@ -24,7 +24,6 @@ import org.mybatis.generator.api.dom.java.Interface;
 import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.Parameter;
-import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.api.dom.xml.Attribute;
 import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
@@ -54,8 +53,7 @@ public class UpdateSelectNullPlugin extends PluginAdapter {
   }
 
   @Override
-  public boolean clientGenerated(Interface interfaze, TopLevelClass topLevelClass,
-      IntrospectedTable introspectedTable) {
+  public boolean clientGenerated(Interface interfaze, IntrospectedTable introspectedTable) {
     // check one not exist, then all not exist
     if (!genericPlugin.methodsAdded.contains(updateByIdSelectManually)) {
       genericPlugin.methodsAdded.add(updateByIdSelectManually);
@@ -74,10 +72,10 @@ public class UpdateSelectNullPlugin extends PluginAdapter {
 
   private void addUpdateByIdSelectManuallyMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
-    Method method = new Method();
+    Method method = new Method(updateByIdSelectManually);
+    method.setAbstract(true);
     context.getCommentGenerator().addGeneralMethodComment(method, introspectedTable);
 
-    method.setName(updateByIdSelectManually);
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setReturnType(FullyQualifiedJavaType.getIntInstance());
 
@@ -110,8 +108,9 @@ public class UpdateSelectNullPlugin extends PluginAdapter {
     element.addElement(dynamicElement);
     // dynamic sets
     StringBuilder sb = new StringBuilder();
-    for (IntrospectedColumn introspectedColumn : ListUtilities.removeGeneratedAlwaysColumns(introspectedTable
-        .getNonPrimaryKeyColumns())) {
+    for (IntrospectedColumn introspectedColumn : ListUtilities
+        .removeGeneratedAlwaysColumns(introspectedTable
+            .getNonPrimaryKeyColumns())) {
       sb.setLength(0);
       sb.append(introspectedColumn.getJavaProperty());
       sb.append(" != null"); //$NON-NLS-1$

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2018 the original author or authors.
+ *    Copyright 2006-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.mybatis.generator.api.dom.java.Interface;
 import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.Parameter;
-import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.api.dom.xml.Attribute;
 import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
@@ -74,12 +73,12 @@ public class BatchInsertPlugin extends PluginAdapter {
   }
 
   @Override
-  public boolean clientGenerated(Interface interfaze, TopLevelClass topLevelClass,
-      IntrospectedTable introspectedTable) {
+  public boolean clientGenerated(Interface interfaze, IntrospectedTable introspectedTable) {
     // if not add batchInsert method yet
     if (!genericPlugin.methodsAdded.contains(batchInsert)) {
       // create method
       Method method = new Method(batchInsert);
+      method.setAbstract(true);
       method.setVisibility(JavaVisibility.DEFAULT);
       method.setReturnType(FullyQualifiedJavaType.getIntInstance());
       method.addParameter(new Parameter(genericPlugin.genericModelList,

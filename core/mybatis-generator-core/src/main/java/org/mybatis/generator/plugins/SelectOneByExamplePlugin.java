@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2018 the original author or authors.
+ *    Copyright 2006-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.mybatis.generator.api.dom.java.Interface;
 import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.Parameter;
-import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.api.dom.xml.Attribute;
 import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
@@ -53,8 +52,7 @@ public class SelectOneByExamplePlugin extends PluginAdapter {
   }
 
   @Override
-  public boolean clientGenerated(
-      Interface interfaze, TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
+  public boolean clientGenerated(Interface interfaze, IntrospectedTable introspectedTable) {
     // check one not exist, then all not exist
     if (!genericPlugin.methodsAdded.contains(selectOneByExample)) {
       genericPlugin.methodsAdded.add(selectOneByExample);
@@ -74,8 +72,8 @@ public class SelectOneByExamplePlugin extends PluginAdapter {
   private void addSelectOneByExampleMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
     // add method
-    Method method = new Method();
-    method.setName(selectOneByExample);
+    Method method = new Method(selectOneByExample);
+    method.setAbstract(true);
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setReturnType(genericPlugin.genericModel);
     // add example param

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2018 the original author or authors.
+ *    Copyright 2006-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import org.mybatis.generator.api.dom.java.Interface;
 import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.Parameter;
-import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.api.dom.xml.Attribute;
 import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
@@ -225,8 +224,7 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
   }
 
   @Override
-  public boolean clientGenerated(Interface interfaze, TopLevelClass topLevelClass,
-      IntrospectedTable introspectedTable) {
+  public boolean clientGenerated(Interface interfaze, IntrospectedTable introspectedTable) {
     FullyQualifiedJavaType type = new FullyQualifiedJavaType(interfaceName);
     type.addTypeArgument(models.get(introspectedTable));
     if (enableExample) {
@@ -258,6 +256,7 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
 //      genericMethod.addJavaDocLine(" */");
 
       genericMethod.setReturnType(returnType);
+      genericMethod.setAbstract(true);
 
       for (int i = 0; i < method.getParameters().size(); i++) {
         Parameter parameter = method.getParameters().get(i);
@@ -282,14 +281,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     return false;
   }
 
-  @Override
-  public boolean clientCountByExampleMethodGenerated(Method method, TopLevelClass topLevelClass,
-      IntrospectedTable introspectedTable) {
-    if (enableExample) {
-      addClientCountByExample(method, introspectedTable);
-    }
-    return false;
-  }
 
   private void addClientCountByExample(Method method, IntrospectedTable introspectedTable) {
     examples.put(introspectedTable, method.getParameters().get(0).getType());
@@ -298,15 +289,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
 
   @Override
   public boolean clientDeleteByExampleMethodGenerated(Method method, Interface interfaze,
-      IntrospectedTable introspectedTable) {
-    if (enableExample) {
-      addClientDeleteByExample(method);
-    }
-    return false;
-  }
-
-  @Override
-  public boolean clientDeleteByExampleMethodGenerated(Method method, TopLevelClass topLevelClass,
       IntrospectedTable introspectedTable) {
     if (enableExample) {
       addClientDeleteByExample(method);
@@ -325,13 +307,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     return false;
   }
 
-  @Override
-  public boolean clientDeleteByPrimaryKeyMethodGenerated(Method method, TopLevelClass topLevelClass,
-      IntrospectedTable introspectedTable) {
-    addClientDeleteByPrimaryKey(method, introspectedTable);
-    return false;
-  }
-
   private void addClientDeleteByPrimaryKey(Method method, IntrospectedTable introspectedTable) {
     ids.put(introspectedTable, method.getParameters().get(0).getType());
     addGenericMethod(method, FullyQualifiedJavaType.getIntInstance(), genericId);
@@ -339,13 +314,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
 
   @Override
   public boolean clientInsertMethodGenerated(Method method, Interface interfaze,
-      IntrospectedTable introspectedTable) {
-    addClientInsert(method, introspectedTable);
-    return false;
-  }
-
-  @Override
-  public boolean clientInsertMethodGenerated(Method method, TopLevelClass topLevelClass,
       IntrospectedTable introspectedTable) {
     addClientInsert(method, introspectedTable);
     return false;
@@ -365,15 +333,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     return false;
   }
 
-  @Override
-  public boolean clientSelectByExampleWithBLOBsMethodGenerated(Method method,
-      TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
-    if (enableExample) {
-      addClientSelectByExampleWithBLOBs(method);
-    }
-    return false;
-  }
-
   private void addClientSelectByExampleWithBLOBs(Method method) {
     addGenericMethod(method, genericModelList, genericExample);
   }
@@ -381,15 +340,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
   @Override
   public boolean clientSelectByExampleWithoutBLOBsMethodGenerated(Method method,
       Interface interfaze, IntrospectedTable introspectedTable) {
-    if (enableExample) {
-      addClientSelectByExampleWithoutBLOBs(method);
-    }
-    return false;
-  }
-
-  @Override
-  public boolean clientSelectByExampleWithoutBLOBsMethodGenerated(Method method,
-      TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
     if (enableExample) {
       addClientSelectByExampleWithoutBLOBs(method);
     }
@@ -407,13 +357,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     return false;
   }
 
-  @Override
-  public boolean clientSelectByPrimaryKeyMethodGenerated(Method method, TopLevelClass topLevelClass,
-      IntrospectedTable introspectedTable) {
-    addClientSelectByPrimaryKey(method);
-    return false;
-  }
-
   private void addClientSelectByPrimaryKey(Method method) {
     addGenericMethod(method, genericModel, genericId);
   }
@@ -421,15 +364,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
   @Override
   public boolean clientUpdateByExampleSelectiveMethodGenerated(Method method, Interface interfaze,
       IntrospectedTable introspectedTable) {
-    if (enableExample) {
-      addClientUpdateByExampleSelective(method);
-    }
-    return false;
-  }
-
-  @Override
-  public boolean clientUpdateByExampleSelectiveMethodGenerated(Method method,
-      TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
     if (enableExample) {
       addClientUpdateByExampleSelective(method);
     }
@@ -449,15 +383,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     return false;
   }
 
-  @Override
-  public boolean clientUpdateByExampleWithBLOBsMethodGenerated(Method method,
-      TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
-    if (enableExample) {
-      addClientUpdateByExampleWithBLOBs(method);
-    }
-    return false;
-  }
-
   private void addClientUpdateByExampleWithBLOBs(Method method) {
     addGenericMethod(method, FullyQualifiedJavaType.getIntInstance(), genericModel, genericExample);
   }
@@ -465,15 +390,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
   @Override
   public boolean clientUpdateByExampleWithoutBLOBsMethodGenerated(Method method,
       Interface interfaze, IntrospectedTable introspectedTable) {
-    if (enableExample) {
-      addClientUpdateByExampleWithoutBLOBs(method);
-    }
-    return false;
-  }
-
-  @Override
-  public boolean clientUpdateByExampleWithoutBLOBsMethodGenerated(Method method,
-      TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
     if (enableExample) {
       addClientUpdateByExampleWithoutBLOBs(method);
     }
@@ -491,13 +407,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     return false;
   }
 
-  @Override
-  public boolean clientUpdateByPrimaryKeySelectiveMethodGenerated(Method method,
-      TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
-    addClientUpdateByPrimaryKeySelective(method);
-    return false;
-  }
-
   private void addClientUpdateByPrimaryKeySelective(Method method) {
     addGenericMethod(method, FullyQualifiedJavaType.getIntInstance(), genericModel);
   }
@@ -505,13 +414,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
   @Override
   public boolean clientUpdateByPrimaryKeyWithBLOBsMethodGenerated(Method method,
       Interface interfaze, IntrospectedTable introspectedTable) {
-    addClientUpdateByPrimaryKeyWithBLOBs(method);
-    return false;
-  }
-
-  @Override
-  public boolean clientUpdateByPrimaryKeyWithBLOBsMethodGenerated(Method method,
-      TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
     addClientUpdateByPrimaryKeyWithBLOBs(method);
     return false;
   }
@@ -527,13 +429,6 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     return false;
   }
 
-  @Override
-  public boolean clientUpdateByPrimaryKeyWithoutBLOBsMethodGenerated(Method method,
-      TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
-    addClientUpdateByPrimaryKeyWithoutBLOBs(method);
-    return false;
-  }
-
   private void addClientUpdateByPrimaryKeyWithoutBLOBs(Method method) {
     addGenericMethod(method, FullyQualifiedJavaType.getIntInstance(), genericModel);
   }
@@ -545,26 +440,12 @@ public class CreateGenericInterfacePlugin extends PluginAdapter {
     return false;
   }
 
-  @Override
-  public boolean clientInsertSelectiveMethodGenerated(Method method, TopLevelClass topLevelClass,
-      IntrospectedTable introspectedTable) {
-    addClientInsertSelective(method);
-    return false;
-  }
-
   private void addClientInsertSelective(Method method) {
     addGenericMethod(method, FullyQualifiedJavaType.getIntInstance(), genericModel);
   }
 
   @Override
   public boolean clientSelectAllMethodGenerated(Method method, Interface interfaze,
-      IntrospectedTable introspectedTable) {
-    addClientSelectAll(method);
-    return false;
-  }
-
-  @Override
-  public boolean clientSelectAllMethodGenerated(Method method, TopLevelClass topLevelClass,
       IntrospectedTable introspectedTable) {
     addClientSelectAll(method);
     return false;

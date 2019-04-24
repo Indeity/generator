@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2018 the original author or authors.
+ *    Copyright 2006-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.mybatis.generator.api.IntrospectedColumn;
 import org.mybatis.generator.api.IntrospectedTable;
-import org.mybatis.generator.api.Plugin;
 import org.mybatis.generator.api.PluginAdapter;
 import org.mybatis.generator.api.dom.OutputUtilities;
 import org.mybatis.generator.api.dom.java.Field;
@@ -37,7 +36,6 @@ import org.mybatis.generator.api.dom.xml.XmlElement;
 import org.mybatis.generator.codegen.mybatis3.ListUtilities;
 import org.mybatis.generator.codegen.mybatis3.MyBatis3FormattingUtilities;
 import org.mybatis.generator.config.GeneratedKey;
-import org.mybatis.generator.internal.PluginAggregator;
 
 /**
  * pain query plugin for update and select, based on generic interface!
@@ -106,16 +104,14 @@ public class PainQueryPlugin extends PluginAdapter {
       TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
     FullyQualifiedJavaType intInstance = FullyQualifiedJavaType.getIntInstance();
 
-    Field limit = new Field();
-    limit.setName("limit");
+    Field limit = new Field("limit",
+        FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper());
     limit.setVisibility(JavaVisibility.PROTECTED);
-    limit.setType(FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper());
     topLevelClass.addField(limit);
     context.getCommentGenerator().addFieldComment(limit, introspectedTable);
 
     // both limit and offset
-    Method justLimit = new Method();
-    justLimit.setName("limit");
+    Method justLimit = new Method("limit");
     justLimit.setVisibility(JavaVisibility.PUBLIC);
     justLimit.addParameter(new Parameter(intInstance, "offset"));
     justLimit.addParameter(new Parameter(intInstance, "limit"));
@@ -128,8 +124,7 @@ public class PainQueryPlugin extends PluginAdapter {
     topLevelClass.addMethod(justLimit);
 
     // simple limit
-    Method mLimit = new Method();
-    mLimit.setName("limit");
+    Method mLimit = new Method("limit");
     mLimit.setVisibility(JavaVisibility.PUBLIC);
     mLimit.addParameter(new Parameter(intInstance, "limit"));
     mLimit.setReturnType(topLevelClass.getType());
@@ -137,16 +132,14 @@ public class PainQueryPlugin extends PluginAdapter {
     mLimit.addBodyLine("return this;");
     topLevelClass.addMethod(mLimit);
 
-    Method getLimit = new Method();
-    getLimit.setName("getLimit");
+    Method getLimit = new Method("getLimit");
     getLimit.setVisibility(JavaVisibility.PUBLIC);
     getLimit.setReturnType(FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper());
     getLimit.addBodyLine("return limit;");
     topLevelClass.addMethod(getLimit);
     context.getCommentGenerator().addGeneralMethodComment(getLimit, introspectedTable);
 
-    Method setLimit = new Method();
-    setLimit.setName("setLimit");
+    Method setLimit = new Method("setLimit");
     setLimit.setVisibility(JavaVisibility.PUBLIC);
     setLimit.addParameter(
         new Parameter(FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper(), "limit"));
@@ -154,23 +147,20 @@ public class PainQueryPlugin extends PluginAdapter {
     topLevelClass.addMethod(setLimit);
     context.getCommentGenerator().addGeneralMethodComment(setLimit, introspectedTable);
 
-    Field offset = new Field();
-    offset.setName("offset");
+    Field offset = new Field("offset",
+        FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper());
     offset.setVisibility(JavaVisibility.PROTECTED);
-    offset.setType(FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper());
     topLevelClass.addField(offset);
     context.getCommentGenerator().addFieldComment(offset, introspectedTable);
 
-    Method getOffset = new Method();
-    getOffset.setName("getOffset");
+    Method getOffset = new Method("getOffset");
     getOffset.setVisibility(JavaVisibility.PUBLIC);
     getOffset.setReturnType(FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper());
     getOffset.addBodyLine("return offset;");
     topLevelClass.addMethod(getOffset);
     context.getCommentGenerator().addGeneralMethodComment(getOffset, introspectedTable);
 
-    Method setOffset = new Method();
-    setOffset.setName("setOffset");
+    Method setOffset = new Method("setOffset");
     setOffset.setVisibility(JavaVisibility.PUBLIC);
     setOffset.addParameter(
         new Parameter(FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper(), "offset"));
@@ -191,8 +181,7 @@ public class PainQueryPlugin extends PluginAdapter {
 
   // add new methods into mapper interfaces
   @Override
-  public boolean clientGenerated(
-      Interface interfaze, TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
+  public boolean clientGenerated(Interface interfaze, IntrospectedTable introspectedTable) {
     // check one not exist, then all not exist
     if (!genericPlugin.methodsAdded.contains(selectManuallyByExample)) {
       genericPlugin.methodsAdded.add(selectManuallyByExample);
@@ -223,10 +212,9 @@ public class PainQueryPlugin extends PluginAdapter {
   // add insertOrUpdateManually() method
   private void addInsertOrUpdateManuallyMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
-    Method method = new Method();
+    Method method = new Method("insertOrUpdateManually");
     context.getCommentGenerator().addGeneralMethodComment(method, introspectedTable);
 
-    method.setName("insertOrUpdateManually");
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setReturnType(FullyQualifiedJavaType.getIntInstance());
 
@@ -325,10 +313,9 @@ public class PainQueryPlugin extends PluginAdapter {
   // add insertSelectiveOrUpdateManually() method
   private void addInsertSelectiveOrUpdateManuallyMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
-    Method method = new Method();
+    Method method = new Method("insertSelectiveOrUpdateManually");
     context.getCommentGenerator().addGeneralMethodComment(method, introspectedTable);
 
-    method.setName("insertSelectiveOrUpdateManually");
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setReturnType(FullyQualifiedJavaType.getIntInstance());
 
@@ -455,10 +442,10 @@ public class PainQueryPlugin extends PluginAdapter {
   // add selectManuallyByExample() method
   private void addSelectManuallyByExampleMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
-    Method method = new Method();
+    Method method = new Method(selectManuallyByExample);
+    method.setAbstract(true);
     context.getCommentGenerator().addGeneralMethodComment(method, introspectedTable);
 
-    method.setName(selectManuallyByExample);
     method.setVisibility(JavaVisibility.PUBLIC);
 
 //    FullyQualifiedJavaType returnType = FullyQualifiedJavaType.getNewListInstance();
@@ -520,10 +507,10 @@ public class PainQueryPlugin extends PluginAdapter {
   // add selectManuallyByPrimaryKey() method
   private void addSelectManuallyByPrimaryKeyMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
-    Method method = new Method();
+    Method method = new Method(selectManuallyByPrimaryKey);
+    method.setAbstract(true);
     context.getCommentGenerator().addGeneralMethodComment(method, introspectedTable);
 
-    method.setName(selectManuallyByPrimaryKey);
     method.setVisibility(JavaVisibility.PUBLIC);
 //    method.setReturnType(new FullyQualifiedJavaType(introspectedTable.getBaseRecordType()));
     method.setReturnType(genericPlugin.genericModel);
@@ -599,10 +586,10 @@ public class PainQueryPlugin extends PluginAdapter {
   // add updateManuallyByExample() method
   private void addUpdateManuallyByExampleMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
-    Method method = new Method();
+    Method method = new Method(updateManuallyByExample);
+    method.setAbstract(true);
     context.getCommentGenerator().addGeneralMethodComment(method, introspectedTable);
 
-    method.setName(updateManuallyByExample);
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setReturnType(FullyQualifiedJavaType.getIntInstance());
 
@@ -647,10 +634,10 @@ public class PainQueryPlugin extends PluginAdapter {
   // add updateManuallyByPrimaryKey() method
   private void addUpdateManuallyByPrimaryKeyMethod(Interface interfaze,
       IntrospectedTable introspectedTable) {
-    Method method = new Method();
+    Method method = new Method(updateManuallyByPrimaryKey);
+    method.setAbstract(true);
     context.getCommentGenerator().addGeneralMethodComment(method, introspectedTable);
 
-    method.setName(updateManuallyByPrimaryKey);
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setReturnType(FullyQualifiedJavaType.getIntInstance());
 
