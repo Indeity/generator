@@ -137,7 +137,7 @@ public class UpdateSelectNullPlugin extends PluginAdapter {
         .getPrimaryKeyColumns()) {
       sb.setLength(0);
       if (and) {
-        sb.append("  and ");
+        sb.append(" and ");
       } else {
         sb.append("where ");
         and = true;
@@ -145,7 +145,8 @@ public class UpdateSelectNullPlugin extends PluginAdapter {
 
       sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
       sb.append(" = ");
-      String parameterClause = MyBatis3FormattingUtilities.getParameterClause(introspectedColumn);
+      String parameterClause = MyBatis3FormattingUtilities
+          .getParameterClause(introspectedColumn, "record.");
       if (addPrefix) {
         sb.append(parameterClause.substring(0, 2));
         sb.append("key.");
